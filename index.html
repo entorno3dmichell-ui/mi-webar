@@ -22,8 +22,8 @@
       position: absolute;
       top: 20px;
       left: 20px;
-      z-index: 20;
-      background: rgba(0, 0, 0, 0.5);
+      z-index: 30;
+      background: rgba(0, 0, 0, 0.55);
       padding: 16px 20px;
       border-radius: 12px;
       max-width: 320px;
@@ -49,16 +49,46 @@
 
     .ar-button {
       background: white;
-      border-radius: 8px;
+      color: black;
+      border-radius: 10px;
       border: none;
       position: absolute;
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 12px 20px;
+      padding: 14px 22px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
+      z-index: 40;
+    }
+
+    .ios-fallback {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: #0a84ff;
+      color: white;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .note {
+      position: absolute;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
     }
   </style>
 </head>
@@ -69,7 +99,14 @@
     <p>Toca el botón para ver el modelo en AR.</p>
   </div>
 
+  <div id="note" class="note">Si estás en iPhone, usa el botón azul.</div>
+
+  <a id="iosFallback" class="ios-fallback" rel="ar" href="./modelo.usdz">
+    Abrir AR en iPhone
+  </a>
+
   <model-viewer
+    id="viewer"
     src="./modelo.glb"
     ios-src="./modelo.usdz"
     alt="Modelo 3D"
@@ -78,14 +115,40 @@
     camera-controls
     auto-rotate
     shadow-intensity="1"
-    exposure="1"
-    environment-image="neutral">
+    exposure="1.4"
+    environment-image="neutral"
+    camera-orbit="45deg 70deg 2m"
+    min-camera-orbit="auto auto 0.5m"
+    max-camera-orbit="auto auto 10m"
+    field-of-view="30deg"
+    interaction-prompt="auto">
 
     <button class="ar-button" slot="ar-button">
       Ver en AR
     </button>
 
   </model-viewer>
+
+  <script>
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const fallback = document.getElementById("iosFallback");
+    const note = document.getElementById("note");
+
+    if (isIOS) {
+      fallback.style.display = "block";
+      note.style.display = "block";
+    }
+
+    const viewer = document.getElementById("viewer");
+
+    viewer.addEventListener("error", (event) => {
+      console.error("Error cargando model-viewer o el modelo:", event);
+    });
+
+    viewer.addEventListener("load", () => {
+      console.log("Modelo cargado correctamente");
+    });
+  </script>
 
 </body>
 </html>
