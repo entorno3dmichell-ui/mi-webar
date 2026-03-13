@@ -21,7 +21,7 @@
       top: 20px;
       left: 20px;
       z-index: 10;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0,0,0,0.5);
       padding: 16px 20px;
       border-radius: 12px;
       max-width: 340px;
@@ -53,15 +53,17 @@
   </div>
 
   <model-viewer
-    src="modelo.glb"
-    ios-src="modelo.usdz"
+    src="./modelo.glb"
+    ios-src="./modelo.usdz"
     alt="Modelo 3D en AR"
     ar
-    ar-modes="webxr scene-viewer quick-look"
+    ar-modes="quick-look scene-viewer webxr"
     camera-controls
     auto-rotate
     shadow-intensity="1"
     exposure="1"
+    reveal="auto"
+    loading="eager"
     environment-image="neutral">
   </model-viewer>
 
