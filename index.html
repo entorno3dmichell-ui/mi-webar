@@ -3,159 +3,219 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modelo 3D - Bienvenido</title>
-  <!-- Incluimos A-Frame (versión estable) -->
-  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <title>Mi WebAR</title>
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
   <style>
-    body, html {
+    html, body {
       margin: 0;
-      padding: 0;
+      width: 100%;
       height: 100%;
       overflow: hidden;
       font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
     }
 
+    /* SPLASH */
     #splash {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #000000, #111111);
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      color: white;
-      z-index: 1000;
-      opacity: 1;
-      transition: opacity 1s ease;
-    }
-
-    #splash.hidden {
+      background: transparent;
       opacity: 0;
+      animation: splashAnim 3s ease forwards;
+      pointer-events: none;
     }
 
-    #welcome-message {
+    .logo-container {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    #splash img {
+      display: block;
+      max-width: 65vw;
+      max-height: 40vh;
+      object-fit: contain;
+      background: transparent;
+    }
+
+    .bottom-bar {
+      width: 100%;
+      height: 18vh;
+      min-height: 90px;
+      background: #d9d9d9;
+      flex-shrink: 0;
+    }
+
+    @keyframes splashAnim {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      70%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* CONTENIDO */
+    .overlay {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: bold;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 20px 40px;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
-      display: none;
+      top: 20px;
+      left: 20px;
+      z-index: 30;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 16px 20px;
+      border-radius: 12px;
+      max-width: 320px;
+    }
+
+    .overlay h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+    }
+
+    .overlay p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    model-viewer {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #222;
     }
 
     .ar-button {
-      margin-top: 20px;
-      padding: 12px 30px;
-      font-size: 18px;
-      background: #007bff;
-      color: white;
+      background: white;
+      color: black;
+      border-radius: 10px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
-      transition: background 0.3s;
-    }
-
-    .ar-button:hover {
-      background: #0056b3;
-    }
-
-    #aframe-container {
-      width: 100%;
-      height: 100vh;
       position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 40;
+    }
+
+    .ios-fallback {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: #0a84ff;
+      color: white;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .note {
+      position: absolute;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Splash screen -->
+  <!-- SPLASH -->
   <div id="splash">
-    <img src="logo.png" alt="Logo" style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='logo-placeholder.png'; this.onerror=null;">
-    <p style="margin: 0 0 20px 0; font-size: 18px;">Cargando modelo...</p>
-    <button class="ar-button" id="start-ar">Abrir en AR</button>
+    <div class="logo-container">
+      <img src="logo.png" alt="Logo" />
+    </div>
+    <div class="bottom-bar"></div>
   </div>
 
-  <!-- Mensaje de bienvenida (aparece después de la carga) -->
-  <div id="welcome-message">
-    ¡Bienvenido! El modelo se cargará aquí.
-    <button class="ar-button" id="load-model-btn">Cargar modelo 3D</button>
+  <!-- TEXTO -->
+  <div class="overlay">
+    <h1>Mi WebAR</h1>
+    <p>Toca el botón para ver el modelo en AR de superficie.</p>
   </div>
 
-  <!-- Contenedor para el modelo 3D (A-Frame) -->
-  <div id="aframe-container"></div>
+  <!-- MENSAJE / FALLBACK iPHONE -->
+  <div id="note" class="note">Si estás en iPhone, usa el botón azul.</div>
+
+  <a id="iosFallback" class="ios-fallback" rel="ar" href="./modelo.usdz">
+    Abrir AR en iPhone
+  </a>
+
+  <!-- VISOR -->
+  <model-viewer
+    id="viewer"
+    src="./modelo.glb"
+    ios-src="./modelo.usdz"
+    alt="Modelo 3D"
+    ar
+    ar-modes="quick-look scene-viewer webxr"
+    camera-controls
+    auto-rotate
+    shadow-intensity="1"
+    exposure="1.4"
+    environment-image="neutral"
+    camera-orbit="45deg 70deg 2m"
+    min-camera-orbit="auto auto 0.5m"
+    max-camera-orbit="auto auto 10m"
+    field-of-view="30deg"
+    interaction-prompt="auto">
+
+    <button class="ar-button" slot="ar-button">
+      Ver en AR
+    </button>
+  </model-viewer>
 
   <script>
-    // Función para ocultar el splash y mostrar el mensaje de bienvenida
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('splash');
-      const welcomeMessage = document.getElementById('welcome-message');
-      const startButton = document.getElementById('start-ar');
-      const loadModelBtn = document.getElementById('load-model-btn');
+    const splash = document.getElementById("splash");
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const fallback = document.getElementById("iosFallback");
+    const note = document.getElementById("note");
+    const viewer = document.getElementById("viewer");
 
-      // Ocultar splash después de 3 segundos
-      setTimeout(() => {
-        splash.style.opacity = "0";
-        splash.classList.add('hidden');
-        welcomeMessage.style.display = 'block';
-      }, 3000);
+    setTimeout(() => {
+      splash.classList.add("hidden");
+    }, 3000);
 
-      // Cuando el botón "Cargar modelo 3D" se hace clic
-      loadModelBtn.addEventListener('click', () => {
-        const container = document.getElementById('aframe-container');
-        container.innerHTML = '';
+    if (isIOS) {
+      fallback.style.display = "block";
+      note.style.display = "block";
+    }
 
-        const scene = document.createElement('a-scene');
-        scene.setAttribute('background', 'color: #111');
+    viewer.addEventListener("load", () => {
+      console.log("Modelo cargado correctamente");
+    });
 
-        const model = document.createElement('a-entity');
-        model.setAttribute('gltf-model', 'modelo.usdz');
-        model.setAttribute('position', '0 0 -5');
-        model.setAttribute('scale', '1 1 1');
-        model.setAttribute('rotation', '0 0 0');
-
-        scene.appendChild(model);
-        container.appendChild(scene);
-
-        // Mensaje de éxito
-        alert("✅ Modelo cargado en 3D. Usa el navegador en modo AR o en pantalla completa.");
-      });
-
-      // Cuando se hace clic en "Abrir en AR"
-      startButton.addEventListener('click', () => {
-        const container = document.getElementById('aframe-container');
-        container.innerHTML = '';
-
-        const scene = document.createElement('a-scene');
-        scene.setAttribute('background', 'color: #111');
-
-        const model = document.createElement('a-entity');
-        model.setAttribute('gltf-model', 'modelo.usdz');
-        model.setAttribute('position', '0 0 -5');
-        model.setAttribute('scale', '1 1 1');
-        model.setAttribute('rotation', '0 0 0');
-
-        scene.appendChild(model);
-        container.appendChild(scene);
-
-        alert("🚀 Modelo cargado en modo AR. Puedes moverlo con el mouse o con tu dispositivo.");
-      });
+    viewer.addEventListener("error", (event) => {
+      console.error("Error cargando el modelo:", event);
     });
   </script>
 
 </body>
 </html>
-
