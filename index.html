@@ -27,7 +27,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: transparent;
+      background: #111;
       opacity: 0;
       animation: splashAnim 3s ease forwards;
       pointer-events: none;
@@ -93,6 +93,17 @@
       line-height: 1.4;
     }
 
+    /* VISOR oculto al principio */
+    #app {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    #app.visible {
+      display: block;
+    }
+
     model-viewer {
       display: block;
       width: 100vw;
@@ -155,45 +166,46 @@
     <div class="bottom-bar"></div>
   </div>
 
-  <!-- TEXTO -->
-  <div class="overlay">
-    <h1>Mi WebAR</h1>
-    <p>Toca el botón para ver el modelo en AR de superficie.</p>
+  <!-- APP OCULTA HASTA QUE TERMINE EL SPLASH -->
+  <div id="app">
+    <div class="overlay">
+      <h1>Mi WebAR</h1>
+      <p>Toca el botón para ver el modelo en AR de superficie.</p>
+    </div>
+
+    <div id="note" class="note">Si estás en iPhone, usa el botón azul.</div>
+
+    <a id="iosFallback" class="ios-fallback" rel="ar" href="./modelo.usdz">
+      Abrir AR en iPhone
+    </a>
+
+    <model-viewer
+      id="viewer"
+      src="./modelo.glb"
+      ios-src="./modelo.usdz"
+      alt="Modelo 3D"
+      ar
+      ar-modes="quick-look scene-viewer webxr"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      exposure="1.4"
+      environment-image="neutral"
+      camera-orbit="45deg 70deg 2m"
+      min-camera-orbit="auto auto 0.5m"
+      max-camera-orbit="auto auto 10m"
+      field-of-view="30deg"
+      interaction-prompt="auto">
+
+      <button class="ar-button" slot="ar-button">
+        Ver en AR
+      </button>
+    </model-viewer>
   </div>
-
-  <!-- MENSAJE / FALLBACK iPHONE -->
-  <div id="note" class="note">Si estás en iPhone, usa el botón azul.</div>
-
-  <a id="iosFallback" class="ios-fallback" rel="ar" href="./modelo.usdz">
-    Abrir AR en iPhone
-  </a>
-
-  <!-- VISOR -->
-  <model-viewer
-    id="viewer"
-    src="./modelo.glb"
-    ios-src="./modelo.usdz"
-    alt="Modelo 3D"
-    ar
-    ar-modes="quick-look scene-viewer webxr"
-    camera-controls
-    auto-rotate
-    shadow-intensity="1"
-    exposure="1.4"
-    environment-image="neutral"
-    camera-orbit="45deg 70deg 2m"
-    min-camera-orbit="auto auto 0.5m"
-    max-camera-orbit="auto auto 10m"
-    field-of-view="30deg"
-    interaction-prompt="auto">
-
-    <button class="ar-button" slot="ar-button">
-      Ver en AR
-    </button>
-  </model-viewer>
 
   <script>
     const splash = document.getElementById("splash");
+    const app = document.getElementById("app");
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const fallback = document.getElementById("iosFallback");
     const note = document.getElementById("note");
@@ -201,6 +213,7 @@
 
     setTimeout(() => {
       splash.classList.add("hidden");
+      app.classList.add("visible");
     }, 3000);
 
     if (isIOS) {
