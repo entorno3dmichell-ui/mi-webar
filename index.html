@@ -3,176 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ver en AR</title>
+  <title>Página con Splash Screen Eliminado</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
+    /* Fondo general */
+    html, body {
       margin: 0;
       padding: 0;
-      color: #333;
-      text-align: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Splash screen (sin franja gris, sin animación de entrada) */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      background: transparent;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }
 
-    h1 {
-      color: #2c3e50;
-      margin-bottom: 20px;
-      font-size: 2rem;
+    /* Logo (con fallback si no carga) */
+    #splash img {
+      max-width: 100%;
+      max-height: 100px;
+      opacity: 0.9;
     }
 
-    .container {
-      max-width: 600px;
-      padding: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      margin: 20px auto;
-      text-align: center;
-    }
-
+    /* Botón AR (en el centro o en la parte inferior) */
     .ar-button {
-      background-color: #3498db;
+      margin-top: 20px;
+      padding: 16px 32px;
+      font-size: 18px;
+      background: #007BFF;
       color: white;
       border: none;
-      padding: 15px 30px;
-      font-size: 1.2rem;
       border-radius: 8px;
       cursor: pointer;
-      margin: 20px 10px;
-      transition: background 0.3s;
+      font-weight: bold;
+      transition: background 0.3s ease;
     }
 
     .ar-button:hover {
-      background-color: #2980b9;
+      background: #0056b3;
     }
 
-    .ios-fallback {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 20px 10px;
-      transition: background 0.3s;
+    /* Responsividad para móviles */
+    @media (max-width: 480px) {
+      .ar-button {
+        padding: 12px 24px;
+        font-size: 16px;
+      }
     }
 
-    .ios-fallback:hover {
-      background-color: #c0392b;
-    }
-
-    .error-message {
-      color: #e74c3c;
-      font-weight: bold;
-      margin: 20px 0;
-      display: none;
-    }
-
-    @keyframes splashAnim {
-      0% { opacity: 0; }
-      20% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    .splash-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #2c3e50;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      animation: splashAnim 3s infinite;
-    }
-
-    .splash-text {
-      color: white;
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+    /* Opcional: estilo para el fondo gris que no se ve al inicio */
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Pantalla de carga -->
-  <div class="splash-screen" id="splash">
-    <div class="splash-text">Cargando... ¡Ver en AR!</div>
+  <!-- Splash screen inicial (sin fondo gris, se oculta después de 3 segundos) -->
+  <div id="splash">
+    <img src="logo.png" alt="Logo" onerror="this.src='logo-placeholder.png'; this.onerror=null;">
+    <!-- Botón opcional (si quieres que aparezca en el splash) -->
+    <button class="ar-button" onclick="window.location.href='modelo.usdz'">Abrir en AR</button>
   </div>
 
-  <!-- Contenedor principal -->
-  <div class="container" id="main-container">
-    <h1>Ver en AR</h1>
-    <p>¡Haz clic en el botón para experimentar con la realidad aumentada!</p>
-    <button class="ar-button" id="ar-button">Ver en AR</button>
-    <button class="ios-fallback" id="ios-fallback">Abrir en iPhone</button>
-    <div class="error-message" id="error-message">No se pudo cargar el modelo. Verifica que los archivos estén presentes.</div>
+  <!-- Contenido principal (aparece después de que el splash se oculta) -->
+  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white;">
+    ¡Bienvenido! El modelo se cargará aquí.
   </div>
-
-  <!-- Incluir el script de model-viewer -->
-  <script src="https://unpkg.com/model-viewer@1.12.0/dist/model-viewer.min.js"></script>
 
   <script>
-    // Espera a que la página esté completamente cargada
-    document.addEventListener('DOMContentLoaded', () => {
+    // Oculta el splash screen después de 3 segundos
+    setTimeout(() => {
       const splash = document.getElementById('splash');
-      const mainContainer = document.getElementById('main-container');
-      const arButton = document.getElementById('ar-button');
-      const iosFallback = document.getElementById('ios-fallback');
-      const errorMessage = document.getElementById('error-message');
+      splash.style.opacity = "0";
+      splash.classList.add('hidden');
+    }, 3000);
 
-      // Oculta la pantalla de carga después de 2 segundos
-      setTimeout(() => {
-        splash.style.display = 'none';
-        mainContainer.style.display = 'flex';
-      }, 2000);
-
-      // Verifica si los archivos existen (en un entorno real, esto se hace en el servidor)
-      // En un entorno de desarrollo, puedes verificar que los archivos estén disponibles
-      const requiredFiles = ['modelo.glb', 'modelo.usdz'];
-
-      // Simulamos que los archivos están disponibles (en producción, deberías verificarlos)
-      // En este caso, si no existen, mostramos el mensaje de error
-      if (!window.location.href.includes('localhost') && !window.location.href.includes('127.0.0.1')) {
-        // En producción, podrías verificar si el archivo existe en el servidor
-        // Esto solo es para desarrollo local
-        console.log('Archivo verificado: todos los archivos están disponibles');
-      }
-
-      // Agregar evento al botón de AR
-      arButton.addEventListener('click', () => {
-        const modelViewer = document.createElement('model-viewer');
-        modelViewer.setAttribute('src', 'modelo.glb');
-        modelViewer.setAttribute('ar', 'true');
-        modelViewer.setAttribute('camera-controls', 'true');
-        modelViewer.setAttribute('shadow-intensity', '1');
-        modelViewer.setAttribute('ar-scale', 'auto');
-        modelViewer.setAttribute('camera-position', '1.5 1.5 2');
-        modelViewer.setAttribute('camera-target', '0 0 0');
-        modelViewer.setAttribute('autospin', 'true');
-        modelViewer.setAttribute('style', 'width: 100%; height: 500px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin: 20px auto; display: block;');
-
-        // Inserta el modelo en el contenedor
-        mainContainer.appendChild(modelViewer);
-        arButton.style.display = 'none';
-        iosFallback.style.display = 'none';
-      });
-
-      // Enlace para iOS (abre en Safari)
-      iosFallback.addEventListener('click', () => {
-        const url = 'https://www.apple.com/safari/';
-        window.open(url, '_blank');
-        alert('Abriendo en Safari de iPhone. El modelo se cargará automáticamente.');
+    // Opcional: si quieres que el botón de AR funcione bien en móvil
+    document.querySelectorAll('.ar-button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Puedes abrir el modelo en AR o redirigir
+        window.open('modelo.usdz', '_blank');
       });
     });
   </script>
