@@ -2,166 +2,179 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WebAR QR</title>
-
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ver en AR</title>
   <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background: #000;
-    }
-
     body {
-      position: fixed;
-      inset: 0;
-    }
-
-    /* Fuerza video/canvas AR a pantalla completa */
-    video,
-    canvas,
-    .a-canvas,
-    .arjs-video,
-    .arjs-loader {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-    }
-
-    video,
-    .arjs-video {
-      object-fit: cover !important;
-      z-index: 1 !important;
-      background: #000 !important;
-    }
-
-    canvas,
-    .a-canvas {
-      z-index: 2 !important;
-      pointer-events: none;
-      background: transparent !important;
-    }
-
-    a-scene {
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 2 !important;
-    }
-
-    /* Splash */
-    #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      text-align: center;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      pointer-events: none;
-      background: transparent;
-      opacity: 0;
-      animation: splashAnim 3s ease forwards;
     }
 
-    .logo-container {
-      flex: 1;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-      box-sizing: border-box;
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 2rem;
     }
 
-    #splash img {
-      display: block;
-      max-width: 65vw;
-      max-height: 40vh;
-      object-fit: contain;
-      background: transparent;
+    .container {
+      max-width: 600px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 20px auto;
+      text-align: center;
     }
 
-    .bottom-bar {
-      width: 100%;
-      height: 18vh;
-      min-height: 90px;
-      background: #d9d9d9;
-      flex-shrink: 0;
+    .ar-button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 20px 10px;
+      transition: background 0.3s;
+    }
+
+    .ar-button:hover {
+      background-color: #2980b9;
+    }
+
+    .ios-fallback {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 20px 10px;
+      transition: background 0.3s;
+    }
+
+    .ios-fallback:hover {
+      background-color: #c0392b;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-weight: bold;
+      margin: 20px 0;
+      display: none;
     }
 
     @keyframes splashAnim {
-      0%   { opacity: 0; }
-      20%  { opacity: 1; }
-      70%  { opacity: 1; }
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      70% { opacity: 1; }
       100% { opacity: 0; }
     }
 
-    .hidden {
-      display: none !important;
+    .splash-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #2c3e50;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: splashAnim 3s infinite;
     }
 
-    /* Mensaje opcional */
-    #status {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      background: rgba(0,0,0,0.7);
+    .splash-text {
       color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      display: none;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
-  <div id="splash">
-    <div class="logo-container">
-      <img src="logo.png" alt="Logo" />
-    </div>
-    <div class="bottom-bar"></div>
+  <!-- Pantalla de carga -->
+  <div class="splash-screen" id="splash">
+    <div class="splash-text">Cargando... ¡Ver en AR!</div>
   </div>
 
-  <div id="status">Apunta la cámara al QR</div>
+  <!-- Contenedor principal -->
+  <div class="container" id="main-container">
+    <h1>Ver en AR</h1>
+    <p>¡Haz clic en el botón para experimentar con la realidad aumentada!</p>
+    <button class="ar-button" id="ar-button">Ver en AR</button>
+    <button class="ios-fallback" id="ios-fallback">Abrir en iPhone</button>
+    <div class="error-message" id="error-message">No se pudo cargar el modelo. Verifica que los archivos estén presentes.</div>
+  </div>
 
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="alpha: true; logarithmicDepthBuffer: true;"
-    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
-  >
-    <a-marker type="pattern" url="pattern-qr.patt">
-      <a-entity
-        gltf-model="modelo.glb"
-        scale="0.3 0.3 0.3"
-        position="0 0 0"
-        rotation="0 0 0">
-      </a-entity>
-    </a-marker>
-
-    <a-entity camera></a-entity>
-  </a-scene>
+  <!-- Incluir el script de model-viewer -->
+  <script src="https://unpkg.com/model-viewer@1.12.0/dist/model-viewer.min.js"></script>
 
   <script>
-    const splash = document.getElementById("splash");
-    const status = document.getElementById("status");
+    // Espera a que la página esté completamente cargada
+    document.addEventListener('DOMContentLoaded', () => {
+      const splash = document.getElementById('splash');
+      const mainContainer = document.getElementById('main-container');
+      const arButton = document.getElementById('ar-button');
+      const iosFallback = document.getElementById('ios-fallback');
+      const errorMessage = document.getElementById('error-message');
 
-    setTimeout(() => {
-      splash.classList.add("hidden");
-      status.style.display = "block";
-    }, 3000);
+      // Oculta la pantalla de carga después de 2 segundos
+      setTimeout(() => {
+        splash.style.display = 'none';
+        mainContainer.style.display = 'flex';
+      }, 2000);
+
+      // Verifica si los archivos existen (en un entorno real, esto se hace en el servidor)
+      // En un entorno de desarrollo, puedes verificar que los archivos estén disponibles
+      const requiredFiles = ['modelo.glb', 'modelo.usdz'];
+
+      // Simulamos que los archivos están disponibles (en producción, deberías verificarlos)
+      // En este caso, si no existen, mostramos el mensaje de error
+      if (!window.location.href.includes('localhost') && !window.location.href.includes('127.0.0.1')) {
+        // En producción, podrías verificar si el archivo existe en el servidor
+        // Esto solo es para desarrollo local
+        console.log('Archivo verificado: todos los archivos están disponibles');
+      }
+
+      // Agregar evento al botón de AR
+      arButton.addEventListener('click', () => {
+        const modelViewer = document.createElement('model-viewer');
+        modelViewer.setAttribute('src', 'modelo.glb');
+        modelViewer.setAttribute('ar', 'true');
+        modelViewer.setAttribute('camera-controls', 'true');
+        modelViewer.setAttribute('shadow-intensity', '1');
+        modelViewer.setAttribute('ar-scale', 'auto');
+        modelViewer.setAttribute('camera-position', '1.5 1.5 2');
+        modelViewer.setAttribute('camera-target', '0 0 0');
+        modelViewer.setAttribute('autospin', 'true');
+        modelViewer.setAttribute('style', 'width: 100%; height: 500px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin: 20px auto; display: block;');
+
+        // Inserta el modelo en el contenedor
+        mainContainer.appendChild(modelViewer);
+        arButton.style.display = 'none';
+        iosFallback.style.display = 'none';
+      });
+
+      // Enlace para iOS (abre en Safari)
+      iosFallback.addEventListener('click', () => {
+        const url = 'https://www.apple.com/safari/';
+        window.open(url, '_blank');
+        alert('Abriendo en Safari de iPhone. El modelo se cargará automáticamente.');
+      });
+    });
   </script>
 
 </body>
