@@ -2,107 +2,160 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Página con Splash Screen Eliminado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modelo 3D - Bienvenido</title>
+  <!-- Incluimos A-Frame (versión estable) -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <style>
-    /* Fondo general */
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      overflow: hidden;
       height: 100%;
-      width: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
     }
 
-    /* Splash screen (sin franja gris, sin animación de entrada) */
     #splash {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #000000, #111111);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: transparent;
+      color: white;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    #splash.hidden {
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
     }
 
-    /* Logo (con fallback si no carga) */
-    #splash img {
-      max-width: 100%;
-      max-height: 100px;
-      opacity: 0.9;
+    #welcome-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      display: none;
     }
 
-    /* Botón AR (en el centro o en la parte inferior) */
     .ar-button {
       margin-top: 20px;
-      padding: 16px 32px;
+      padding: 12px 30px;
       font-size: 18px;
-      background: #007BFF;
+      background: #007bff;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+      transition: background 0.3s;
     }
 
     .ar-button:hover {
       background: #0056b3;
     }
 
-    /* Responsividad para móviles */
-    @media (max-width: 480px) {
-      .ar-button {
-        padding: 12px 24px;
-        font-size: 16px;
-      }
-    }
-
-    /* Opcional: estilo para el fondo gris que no se ve al inicio */
-    .hidden {
-      opacity: 0;
-      pointer-events: none;
+    #aframe-container {
+      width: 100%;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
     }
   </style>
 </head>
 <body>
 
-  <!-- Splash screen inicial (sin fondo gris, se oculta después de 3 segundos) -->
+  <!-- Splash screen -->
   <div id="splash">
-    <img src="logo.png" alt="Logo" onerror="this.src='logo-placeholder.png'; this.onerror=null;">
-    <!-- Botón opcional (si quieres que aparezca en el splash) -->
-    <button class="ar-button" onclick="window.location.href='modelo.usdz'">Abrir en AR</button>
+    <img src="logo.png" alt="Logo" style="width: 100px; height: 100px; object-fit: contain; margin-bottom: 20px;" onerror="this.src='logo-placeholder.png'; this.onerror=null;">
+    <p style="margin: 0 0 20px 0; font-size: 18px;">Cargando modelo...</p>
+    <button class="ar-button" id="start-ar">Abrir en AR</button>
   </div>
 
-  <!-- Contenido principal (aparece después de que el splash se oculta) -->
-  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; color: white;">
+  <!-- Mensaje de bienvenida (aparece después de la carga) -->
+  <div id="welcome-message">
     ¡Bienvenido! El modelo se cargará aquí.
+    <button class="ar-button" id="load-model-btn">Cargar modelo 3D</button>
   </div>
+
+  <!-- Contenedor para el modelo 3D (A-Frame) -->
+  <div id="aframe-container"></div>
 
   <script>
-    // Oculta el splash screen después de 3 segundos
-    setTimeout(() => {
+    // Función para ocultar el splash y mostrar el mensaje de bienvenida
+    window.addEventListener('load', () => {
       const splash = document.getElementById('splash');
-      splash.style.opacity = "0";
-      splash.classList.add('hidden');
-    }, 3000);
+      const welcomeMessage = document.getElementById('welcome-message');
+      const startButton = document.getElementById('start-ar');
+      const loadModelBtn = document.getElementById('load-model-btn');
 
-    // Opcional: si quieres que el botón de AR funcione bien en móvil
-    document.querySelectorAll('.ar-button').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Puedes abrir el modelo en AR o redirigir
-        window.open('modelo.usdz', '_blank');
+      // Ocultar splash después de 3 segundos
+      setTimeout(() => {
+        splash.style.opacity = "0";
+        splash.classList.add('hidden');
+        welcomeMessage.style.display = 'block';
+      }, 3000);
+
+      // Cuando el botón "Cargar modelo 3D" se hace clic
+      loadModelBtn.addEventListener('click', () => {
+        const container = document.getElementById('aframe-container');
+        container.innerHTML = '';
+
+        const scene = document.createElement('a-scene');
+        scene.setAttribute('background', 'color: #111');
+
+        const model = document.createElement('a-entity');
+        model.setAttribute('gltf-model', 'modelo.usdz');
+        model.setAttribute('position', '0 0 -5');
+        model.setAttribute('scale', '1 1 1');
+        model.setAttribute('rotation', '0 0 0');
+
+        scene.appendChild(model);
+        container.appendChild(scene);
+
+        // Mensaje de éxito
+        alert("✅ Modelo cargado en 3D. Usa el navegador en modo AR o en pantalla completa.");
+      });
+
+      // Cuando se hace clic en "Abrir en AR"
+      startButton.addEventListener('click', () => {
+        const container = document.getElementById('aframe-container');
+        container.innerHTML = '';
+
+        const scene = document.createElement('a-scene');
+        scene.setAttribute('background', 'color: #111');
+
+        const model = document.createElement('a-entity');
+        model.setAttribute('gltf-model', 'modelo.usdz');
+        model.setAttribute('position', '0 0 -5');
+        model.setAttribute('scale', '1 1 1');
+        model.setAttribute('rotation', '0 0 0');
+
+        scene.appendChild(model);
+        container.appendChild(scene);
+
+        alert("🚀 Modelo cargado en modo AR. Puedes moverlo con el mouse o con tu dispositivo.");
       });
     });
   </script>
 
 </body>
 </html>
+
