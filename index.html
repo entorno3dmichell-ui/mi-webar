@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>WebAR QR</title>
 
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -18,15 +18,46 @@
       background: #000;
     }
 
-    a-scene {
+    body {
       position: fixed;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
     }
 
-    /* SPLASH */
+    /* Fuerza video/canvas AR a pantalla completa */
+    video,
+    canvas,
+    .a-canvas,
+    .arjs-video,
+    .arjs-loader {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+
+    video,
+    .arjs-video {
+      object-fit: cover !important;
+      z-index: 1 !important;
+      background: #000 !important;
+    }
+
+    canvas,
+    .a-canvas {
+      z-index: 2 !important;
+      pointer-events: none;
+      background: transparent !important;
+    }
+
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 2 !important;
+    }
+
+    /* Splash */
     #splash {
       position: fixed;
       inset: 0;
@@ -36,10 +67,7 @@
       justify-content: center;
       align-items: center;
       pointer-events: none;
-
-      /* importante: sin fondo blanco */
       background: transparent;
-
       opacity: 0;
       animation: splashAnim 3s ease forwards;
     }
@@ -77,16 +105,28 @@
       100% { opacity: 0; }
     }
 
-    .splash-hidden {
-      opacity: 0 !important;
-      visibility: hidden !important;
+    .hidden {
       display: none !important;
+    }
+
+    /* Mensaje opcional */
+    #status {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- SPLASH -->
   <div id="splash">
     <div class="logo-container">
       <img src="logo.png" alt="Logo" />
@@ -94,11 +134,12 @@
     <div class="bottom-bar"></div>
   </div>
 
-  <!-- ESCENA AR -->
+  <div id="status">Apunta la cámara al QR</div>
+
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; alpha: true;"
+    renderer="alpha: true; logarithmicDepthBuffer: true;"
     arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
   >
     <a-marker type="pattern" url="pattern-qr.patt">
@@ -115,9 +156,11 @@
 
   <script>
     const splash = document.getElementById("splash");
+    const status = document.getElementById("status");
 
     setTimeout(() => {
-      splash.classList.add("splash-hidden");
+      splash.classList.add("hidden");
+      status.style.display = "block";
     }, 3000);
   </script>
 
