@@ -1,202 +1,221 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Modelo 3D con WebAR</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi WebAR</title>
 
-  <!-- Viewport: responsive + no zoom -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <!-- Fallback estático para crawlers sin JS -->
-  <noscript>
-    <div class="fallback">
-      <h2>Modelo en alta resolución (sin AR)</h2>
-      <img src="assets/modelo‑preview.jpg"
-           alt="Vista previa del modelo 3D" width="100%">
-    </div>
-  </noscript>
-
-  <!-- Estilos globales -->
   <style>
-    :root {
-      --accent: #0066ff;   /* Azul alto contraste */
-      --bg: #ffffff;
-      --text: #111111;
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
     }
 
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:sans-serif;color:var(--text);
-      background:var(--bg);min-height:100vh;display:flex;
-      flex-direction:column;align-items:center;justify-content:center
+    /* SPLASH */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: transparent;
+      opacity: 0;
+      animation: splashAnim 3s ease forwards;
+      pointer-events: none;
     }
-    h1{font-size:2rem;margin-bottom:.5rem}
-    /* Splash */
-    #splash{
-      position:absolute;top:0;left:0;width:100%;height:100%;
-      background:#000;color:white;display:flex;
-      align-items:center;justify-content:center;
-      flex-direction:column;text-align:center;
-      animation:splash 3s ease-out forwards
+
+    .logo-container {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      box-sizing: border-box;
     }
-    #splash.hidden{display:none}
-    @keyframes splash{
-      0%   {opacity:1}
-      70%  {opacity:1}
-      100% {opacity:0}
+
+    #splash img {
+      display: block;
+      max-width: 65vw;
+      max-height: 40vh;
+      object-fit: contain;
+      background: transparent;
     }
-    /* Botón AR */
-    .ar-button{
-      margin-top:.75rem;padding:.5rem 1.25rem;
-      background:var(--accent);color:white;border:none;
-      font-size:1rem;cursor:pointer;border-radius:.3rem
+
+    .bottom-bar {
+      width: 100%;
+      height: 18vh;
+      min-height: 90px;
+      background: #d9d9d9;
+      flex-shrink: 0;
     }
-    .ar-button:focus-visible{outline:2px solid #fff}
-    /* Mensaje de compatibilidad */
-    .compat{
-      margin-top:.5rem;font-size:.9rem;color:#555
+
+    @keyframes splashAnim {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      70%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* CONTENIDO */
+    .overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 30;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 16px 20px;
+      border-radius: 12px;
+      max-width: 320px;
+    }
+
+    .overlay h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+    }
+
+    .overlay p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    model-viewer {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #222;
+    }
+
+    .ar-button {
+      background: white;
+      color: black;
+      border-radius: 10px;
+      border: none;
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 40;
+    }
+
+    .ios-fallback {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: #0a84ff;
+      color: white;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .note {
+      position: absolute;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
     }
   </style>
-
-  <!-- Polyfill para model-viewer (si es necesario) -->
-  <script type="module"
-          src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
-  <!-- Título accesible -->
-  <h1 id="main-title">Modelo 3D con WebAR</h1>
-
-  <!-- Splash screen -->
-  <div id="splash" aria-live="polite" role="status">
-    <p>Descargando modelo…</p>
-    <button class="ar-button skip-splash"
-            aria-label="Saltar pantalla de carga">Saltar
-    </button>
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="logo-container">
+      <img src="logo.png" alt="Logo" />
+    </div>
+    <div class="bottom-bar"></div>
   </div>
 
-  <!-- Contenedor del visor (lazy‑load) -->
-  <section id="viewer-container" aria-labelledby="main-title">
-    <!-- El visor se crea dinámicamente con JS -->
-  </section>
+  <!-- TEXTO -->
+  <div class="overlay">
+    <h1>Mi WebAR</h1>
+    <p>Toca el botón para ver el modelo en AR de superficie.</p>
+  </div>
 
-  <!-- Mensaje de compatibilidad (se muestra solo si es necesario) -->
-  <p class="compat" id="compat-msg" style="display:none"></p>
+  <!-- MENSAJE / FALLBACK iPHONE -->
+  <div id="note" class="note">Si estás en iPhone, usa el botón azul.</div>
 
-  <!-- JavaScript principal -->
+  <a id="iosFallback" class="ios-fallback" rel="ar" href="./modelo.usdz">
+    Abrir AR en iPhone
+  </a>
+
+  <!-- VISOR -->
+  <model-viewer
+    id="viewer"
+    src="./modelo.glb"
+    ios-src="./modelo.usdz"
+    alt="Modelo 3D"
+    ar
+    ar-modes="quick-look scene-viewer webxr"
+    camera-controls
+    auto-rotate
+    shadow-intensity="1"
+    exposure="1.4"
+    environment-image="neutral"
+    camera-orbit="45deg 70deg 2m"
+    min-camera-orbit="auto auto 0.5m"
+    max-camera-orbit="auto auto 10m"
+    field-of-view="30deg"
+    interaction-prompt="auto">
+
+    <button class="ar-button" slot="ar-button">
+      Ver en AR
+    </button>
+  </model-viewer>
+
   <script>
-    /* ---------- CONFIGURACIÓN DEL MODELO ---------- */
-    const MODEL_URL = 'assets/modelo.glb';          // GLB
-    const USDZ_URL = 'assets/modelo.usdz';         // Quick‑Look (iOS)
-    const FALLBACK_IMG = 'assets/modelo‑preview.jpg';
+    const splash = document.getElementById("splash");
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const fallback = document.getElementById("iosFallback");
+    const note = document.getElementById("note");
+    const viewer = document.getElementById("viewer");
 
-    /* ---------- INTERSECT OBSERVER: LECTURA DEL VISOR ---------- */
-    const observerOptions = {rootMargin: '0px', threshold: 0.1};
-    const viewerContainer = document.getElementById('viewer-container');
-    let modelViewer; // referencia al elemento
+    setTimeout(() => {
+      splash.classList.add("hidden");
+    }, 3000);
 
-    const lazyLoadModel = () => {
-      // Evita cargar si ya está creado
-      if (modelViewer) return;
+    if (isIOS) {
+      fallback.style.display = "block";
+      note.style.display = "block";
+    }
 
-      modelViewer = document.createElement('model-viewer');
-      modelViewer.setAttribute('src', MODEL_URL);
-      modelViewer.setAttribute('alt', 'Modelo 3D interactivo');
-      modelViewer.setAttribute('camera-controls', '');
-      modelViewer.setAttribute('auto-rotate', '');
-      modelViewer.setAttribute('ar-modes', 'webxr quick-look scene-viewer'); // soporta WebXR y Quick‑Look
-      modelViewer.setAttribute('environment-image', 'neutral'); // para iluminación básica
-      modelViewer.style.width = '100%';
-      modelViewer.style.maxWidth = '600px';
-      modelViewer.style.height = '400px';
-      viewerContainer.appendChild(modelViewer);
+    viewer.addEventListener("load", () => {
+      console.log("Modelo cargado correctamente");
+    });
 
-      /* ---------- EVENTOS DEL VISOR ---------- */
-      modelViewer.addEventListener('load', () => console.log('Modelo cargado'));
-      modelViewer.addEventListener('error', e => {
-        const msg = e.detail?.message ?? 'Error desconocido al cargar el modelo';
-        showCompat(msg);
-        console.error(msg, e);
-      });
-
-      // Para saber si AR fue aceptada / rechazada
-      modelViewer.addEventListener('ar-status', e => {
-        if (e.detail === 'started') {
-          console.log('AR iniciado');
-        } else if (e.detail === 'failed' || e.detail === 'unsupported'){
-          showCompat('AR no disponible en este dispositivo.');
-        }
-      });
-    };
-
-    /* ---------- DETECCIÓN DE WEBXR / QUICK‑LOOK ---------- */
-    const supportsWebXR = async () => {
-      try { return await navigator.xr?.isSessionSupported('immersive-ar'); } catch(_) {}
-      return false;
-    };
-    const isSafariIOS = () => {
-      const ua = navigator.userAgent;
-      const match = ua.match(/Version\/([0-9.]+).*Safari/);
-      if (!match) return false; // no Safari
-      const ver = parseFloat(match[1]);
-      return ver >= 12 && /iPhone|iPad/.test(ua); // iOS Safari
-    };
-
-    /* ---------- MENSAJES DE COMPATIBILIDAD ---------- */
-    const compatMsgEl = document.getElementById('compat-msg');
-    const showCompat = msg => {
-      compatMsgEl.textContent = msg;
-      compatMsgEl.style.display = 'block';
-    };
-    const clearCompat = () => { compatMsgEl.style.display = 'none'; };
-
-    /* ---------- BOTÓN “VER EN AR” (fallback) ---------- */
-    // Si el visor no está disponible, muestra un botón que abre Quick‑Look o WebXR
-    const showARButton = async () => {
-      if (!modelViewer) return;
-      const btn = document.createElement('button');
-      btn.className = 'ar-button';
-      btn.textContent = 'Ver en AR';
-      btn.setAttribute('aria-label', 'Abrir modelo en realidad aumentada');
-
-      // Si WebXR está disponible, usarlo
-      if (await supportsWebXR()) {
-        btn.onclick = () => modelViewer.enterAR();
-      } else if (isSafariIOS() && USDZ_URL) { // Quick‑Look fallback
-        btn.onclick = () => window.location.href = USDZ_URL;
-      } else {
-        showCompat('No se puede abrir el modo AR en este navegador.');
-        return;
-      }
-
-      viewerContainer.appendChild(btn);
-    };
-
-    /* ---------- SPLASH SCREEN (skip / auto‑hide) ---------- */
-    const splashEl = document.getElementById('splash');
-    const hideSplash = () => {
-      splashEl.classList.add('hidden');
-      clearCompat();
-    };
-    // Auto‑ocultar cuando la animación termine
-    splashEl.addEventListener('animationend', hideSplash);
-    // Opción de salto manual
-    document.querySelector('.skip-splash').addEventListener('click', hideSplash);
-
-    /* ---------- OBSERVER DE LECTURA (lazy‑load) ---------- */
-    const observer = new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          lazyLoadModel();
-          showARButton();
-          // Una vez cargado no volver a observar
-          obs.unobserve(viewerContainer);
-        }
-      });
-    }, observerOptions);
-
-    observer.observe(viewerContainer);
-
+    viewer.addEventListener("error", (event) => {
+      console.error("Error cargando el modelo:", event);
+    });
   </script>
+
 </body>
 </html>
